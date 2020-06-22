@@ -858,7 +858,7 @@ class HighwayLayer(nn.Module):
         trans = F.relu(trans)
         gate = self.gate_lin(x)
         gate = F.sigmoid(gate)
-        ones_tensor = Variable(torch.ones(gate.size()).cuda(async=True))
+        ones_tensor = torch.ones(gate.size()).cuda()
         one_minus_gate = torch.add(ones_tensor, torch.mul(gate, -1))
         y = torch.add(torch.mul(gate, trans), torch.mul(one_minus_gate, x))
         return y

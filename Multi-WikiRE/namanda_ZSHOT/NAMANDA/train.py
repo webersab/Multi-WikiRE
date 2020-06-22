@@ -24,7 +24,9 @@ logger = logging.getLogger()
 
 # Defaults
 #DATA_DIR = os.path.join(DRQA_DATA, 'datasets')
-DATA_DIR = "../../zeroshot/all_splits_json/entity_split/"
+#DATA_DIR = "../../zeroshot/all_splits_json/entity_split/"
+#DATA_DIR = "D:/data/datatsets/newsqa/newsqa-combined-orig-nil-data/"
+DATA_DIR = ""
 MODEL_DIR = 'models'
 EMBED_DIR = ""
 #EMBED_DIR = os.path.join(DRQA_DATA, 'embeddings')
@@ -45,7 +47,7 @@ def add_train_args(parser):
                          help='Train on CPU, even if GPUs are available.')
     runtime.add_argument('--gpu', type=int, default=-1,
                          help='Run on a specific GPU')
-    runtime.add_argument('--data-workers', type=int, default=5,
+    runtime.add_argument('--data-workers', type=int, default=0,
                          help='Number of subprocesses for data loading')
     runtime.add_argument('--parallel', type='bool', default=False,
                          help='Use DataParallel on all available GPUs')
@@ -68,12 +70,15 @@ def add_train_args(parser):
     files.add_argument('--data-dir', type=str, default=DATA_DIR,
                        help='Directory of training/validation data')
     files.add_argument('--train-file', type=str,
-                       default='train-nil-processed-corenlp.txt',
+                       #default='train-nil-processed-corenlp.txt',
+                       default='train.configd5.prepend_nil-processed-corenlp.txt',
                        help='Preprocessed train file')
     files.add_argument('--dev-file', type=str,
-                       default='dev-nil-processed-corenlp.txt',
+                       #default='dev-nil-processed-corenlp.txt',
+                       default='dev.configd5.prepend_nil-processed-corenlp.txt',
                        help='Preprocessed dev file')
-    files.add_argument('--dev-json', type=str, default='dev_nil.json.prepend_nil',
+    #files.add_argument('--dev-json', type=str, default='dev_nil.json.prepend_nil',
+    files.add_argument('--dev-json', type=str, default='dev_nil.json',
                        help=('Unprocessed dev file to run validation '
                              'while training on'))
     files.add_argument('--embed-dir', type=str, default=EMBED_DIR,
@@ -136,7 +141,8 @@ def set_defaults(args):
             raise IOError('No such file: %s' % args.embedding_file)
 
     # Set model directory
-    subprocess.call(['mkdir', '-p', args.model_dir])
+    #subprocess.call(['mkdir', '-p', args.model_dir])
+    #subprocess.call(['mkdir', args.model_dir])
 
     # Set model name
     if not args.model_name:
@@ -150,7 +156,7 @@ def set_defaults(args):
 
     # Embeddings options
     if args.embedding_file:
-        with open(args.embedding_file) as f:
+        with open(args.embedding_file,encoding="utf8") as f:
             # [1] for fastext
             dim = len(f.readlines()[1].strip().split(' ')) - 1
         args.embedding_dim = dim
@@ -469,6 +475,7 @@ def main(args):
             batch_size=args.batch_size,
             sampler=train_sampler,
             num_workers=args.data_workers,
+            #num_workers=0,
             collate_fn=vector.batchify_with_charemb,
             pin_memory=args.cuda,
         )

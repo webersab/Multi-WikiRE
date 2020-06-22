@@ -107,7 +107,7 @@ class DocReader(object):
 
         # When normalized, some words are duplicated. (Average the embeddings).
         vec_counts = {}
-        with open(embedding_file) as f:
+        with open(embedding_file,encoding="utf8") as f:
             for line in f:
                 parsed = line.rstrip().split(' ')
                 #for fasttext first line
@@ -243,14 +243,14 @@ class DocReader(object):
 
         # Transfer to GPU
         if self.use_cuda:
-            inputs = [e if e is None else Variable(e.cuda(async=True))
+            inputs = [e if e is None else e.cuda()
                       for e in ex[:label_start_ind]]
-            target_s = Variable(ex[label_start_ind].cuda(async=True))
-            target_e = Variable(ex[label_start_ind+1].cuda(async=True))
+            target_s = ex[label_start_ind].cuda()
+            target_e = ex[label_start_ind+1].cuda()
         else:
-            inputs = [e if e is None else Variable(e) for e in ex[:label_start_ind]]
-            target_s = Variable(ex[label_start_ind])
-            target_e = Variable(ex[label_start_ind+1])
+            inputs = [e if e is None else e for e in ex[:label_start_ind]]
+            target_s = ex[label_start_ind]
+            target_e = ex[label_start_ind+1]
 
         if not self.args.char_embedding:
             inputs.insert(2, None)
@@ -278,7 +278,8 @@ class DocReader(object):
         # Reset any partially fixed parameters (e.g. rare words)
         self.reset_parameters()
 
-        return loss.data[0], ex[0].size(0)
+        #return loss.data[0], ex[0].size(0)
+        return loss.item(), ex[0].size(0)
 
     def reset_parameters(self):
         """Reset any partially fixed parameters to original states."""
@@ -329,10 +330,10 @@ class DocReader(object):
         # Transfer to GPU
         if self.use_cuda:
             inputs = [e if e is None else
-                      Variable(e.cuda(async=True), volatile=True)
+                      e.cuda()
                       for e in ex[:label_start_ind]]
         else:
-            inputs = [e if e is None else Variable(e, volatile=True)
+            inputs = [e if e is None else e
                       for e in ex[:label_start_ind]]
 
         if not self.args.char_embedding:
