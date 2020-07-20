@@ -70,15 +70,13 @@ def add_train_args(parser):
     files.add_argument('--data-dir', type=str, default=DATA_DIR,
                        help='Directory of training/validation data')
     files.add_argument('--train-file', type=str,
-                       #default='train-nil-processed-corenlp.txt',
-                       default='train.configd5.prepend_nil-processed-corenlp.txt',
+                       default="qas_en_train_set.json.configd.prepend_nil-processed-corenlp.txt",
                        help='Preprocessed train file')
     files.add_argument('--dev-file', type=str,
-                       #default='dev-nil-processed-corenlp.txt',
-                       default='dev.configd5.prepend_nil-processed-corenlp.txt',
+                       default='qas_de_parallel_de-en_dev_set.json.configd.prepend_nil-processed-spacy.txt',
                        help='Preprocessed dev file')
-    #files.add_argument('--dev-json', type=str, default='dev_nil.json.prepend_nil',
-    files.add_argument('--dev-json', type=str, default='dev_nil.json',
+    files.add_argument('--dev-json', type=str,
+                       default='qas_de_parallel_de-en_dev_set.json.configd.prepend_nil',
                        help=('Unprocessed dev file to run validation '
                              'while training on'))
     files.add_argument('--embed-dir', type=str, default=EMBED_DIR,
@@ -107,7 +105,8 @@ def add_train_args(parser):
 
     # General
     general = parser.add_argument_group('General')
-    general.add_argument('--official-eval', type='bool', default=True,
+    general.add_argument('--official-eval', type='bool',
+                         default=True,
                          help='Validate with official eval')
     general.add_argument('--valid-metric', type=str, default='f1',
                          help='The evaluation metric used for model selection')
@@ -313,22 +312,26 @@ def validate_official(args, data_loader, model, global_stats,
         ex_id, batch_size = ex[-1], ex[0].size(0)
         pred_s, pred_e, _ = model.predict(ex)
 
+
         for i in range(batch_size):
-            s_offset = offsets[ex_id[i]][pred_s[i][0]][0]
-            #print("s_offset:", s_offset)
-            e_offset = offsets[ex_id[i]][pred_e[i][0]][1]
-            #print("s_offset:", s_offset)
-            prediction = texts[ex_id[i]][s_offset:e_offset]
-            #print("pred:", prediction)
-
-
-            # Compute metrics
-            #print(answers[ex_id[i]])
-            ground_truths = answers[ex_id[i]]
-            exact_match.update(utils.metric_max_over_ground_truths(
-                utils.exact_match_score, prediction, ground_truths))
-            f1.update(utils.metric_max_over_ground_truths(
-                utils.f1_score, prediction, ground_truths))
+            try:
+                s_offset = offsets[ex_id[i]][pred_s[i][0]][0]
+                #print("s_offset:", s_offset)
+                e_offset = offsets[ex_id[i]][pred_e[i][0]][1]
+                #print("e_offset:", e_offset)
+                prediction = texts[ex_id[i]][s_offset:e_offset]
+                #How can I print the question and context here?
+                print("pred:", prediction)
+                # Compute metrics
+                print(answers[ex_id[i]])
+                ground_truths = answers[ex_id[i]]
+                exact_match.update(utils.metric_max_over_ground_truths(
+                    utils.exact_match_score, prediction, ground_truths))
+                f1.update(utils.metric_max_over_ground_truths(
+                    utils.f1_score, prediction, ground_truths))
+            except KeyError:
+                print("key error at key ",[ex_id[i]])
+                continue
 
         examples += batch_size
 

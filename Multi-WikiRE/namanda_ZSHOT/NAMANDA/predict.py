@@ -16,7 +16,7 @@ import argparse
 import logging
 import json
 
-from tqdm import tqdm
+#from tqdm import tqdm
 #from drqa.reader import Predictor
 from namanda.reader.predictor import Predictor 
 logger = logging.getLogger()
@@ -29,15 +29,15 @@ logger.addHandler(console)
 parser = argparse.ArgumentParser()
 parser.add_argument('dataset', type=str, default=None,
                     help='Dataset to evaluate on')
-parser.add_argument('--model', type=str, default=None,
+parser.add_argument('--model', type=str, default="20200717-924e6afa.mdl",
                     help='Path to model to use')
-parser.add_argument('--embedding-file', type=str, default=None,
+parser.add_argument('--embedding-file', type=str, default="glove.840B.300d.txt",
                     help=('Expand dictionary to use all pretrained '
                           'embeddings in this file.'))
 parser.add_argument('--out-dir', type=str, default='/tmp',
                     help=('Directory to write prediction file to '
                           '(<dataset>-<model>.preds)'))
-parser.add_argument('--tokenizer', type=str, default=None,
+parser.add_argument('--tokenizer', type=str, default="corenlp",
                     help=("String option specifying tokenizer type to use "
                           "(e.g. 'corenlp')"))
 parser.add_argument('--num-workers', type=int, default=None,
@@ -46,7 +46,7 @@ parser.add_argument('--no-cuda', action='store_true',
                     help='Use CPU only')
 parser.add_argument('--gpu', type=int, default=-1,
                     help='Specify GPU device id to use')
-parser.add_argument('--batch-size', type=int, default=100,
+parser.add_argument('--batch-size', type=int, default=10,
                     help='Example batching size')
 parser.add_argument('--top-n', type=int, default=1,
                     help='Store top N predicted spans per example')
@@ -90,7 +90,8 @@ with open(args.dataset) as f:
                 examples.append((context, qa['question']))
 
 results = {}
-for i in tqdm(range(0, len(examples), args.batch_size)):
+#for i in tqdm(range(0, len(examples), args.batch_size)):
+for i in range(0, len(examples), args.batch_size):
     predictions = predictor.predict_batch(
         examples[i:i + args.batch_size], top_n=args.top_n
     )
