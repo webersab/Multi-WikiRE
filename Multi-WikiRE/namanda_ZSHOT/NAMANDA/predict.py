@@ -16,7 +16,7 @@ import argparse
 import logging
 import json
 
-#from tqdm import tqdm
+from tqdm import tqdm
 #from drqa.reader import Predictor
 from namanda.reader.predictor import Predictor 
 logger = logging.getLogger()
@@ -37,7 +37,7 @@ parser.add_argument('--embedding-file', type=str, default="glove.840B.300d.txt",
 parser.add_argument('--out-dir', type=str, default='/tmp',
                     help=('Directory to write prediction file to '
                           '(<dataset>-<model>.preds)'))
-parser.add_argument('--tokenizer', type=str, default="corenlp",
+parser.add_argument('--tokenizer', type=str, default=None,
                     help=("String option specifying tokenizer type to use "
                           "(e.g. 'corenlp')"))
 parser.add_argument('--num-workers', type=int, default=None,
@@ -90,8 +90,8 @@ with open(args.dataset) as f:
                 examples.append((context, qa['question']))
 
 results = {}
-#for i in tqdm(range(0, len(examples), args.batch_size)):
-for i in range(0, len(examples), args.batch_size):
+for i in tqdm(range(0, len(examples), args.batch_size)):
+#for i in range(0, len(examples), args.batch_size):
     predictions = predictor.predict_batch(
         examples[i:i + args.batch_size], top_n=args.top_n
     )
